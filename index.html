@@ -169,26 +169,30 @@
         .onboarding-next { flex: 1; padding: 11px; border: none; border-radius: 8px; background: #3a3a3c; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
         .onboarding-next:active { background: #2c2c2e; }
         /* ── Onboarding visuals ── */
-        .ob-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
-        .ob-preview-box { border: 1px solid #e5e5ea; border-radius: 8px; padding: 8px 10px; min-height: 50px; }
-        .ob-preview-label { font-size: 10px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
-        .ob-preview-chip { display: block; background: #f2f2f7; border-radius: 4px; padding: 3px 7px; font-size: 12px; color: #3a3a3c; font-weight: 500; margin-bottom: 3px; }
-        .ob-chip-discovery { background: #d4f5d4; color: #1e6b1e; }
-        .ob-flow { display: flex; align-items: flex-start; gap: 0; margin-bottom: 12px; }
-        .ob-flow-box { flex: 1; border: 1px solid #e5e5ea; border-radius: 8px; padding: 7px 3px 6px; text-align: center; min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
-        .ob-flow-arrow { flex: 0 0 auto; color: #c6c6c8; font-size: 12px; padding: 0 2px; margin-top: 9px; }
-        .ob-flow-label { font-size: 9px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; line-height: 1; }
-        .ob-flow-chip { font-size: 11px; color: #3a3a3c; font-weight: 600; background: #f2f2f7; border-radius: 4px; padding: 2px 5px; opacity: 0; }
+        .ob-quad { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; }
+        .ob-quad-box { border: 1px solid #e5e5ea; border-radius: 7px; padding: 7px 8px 7px; min-height: 46px; }
+        .ob-quad-label { font-size: 9px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px; line-height: 1; }
+        .ob-chip-row { display: flex; align-items: center; gap: 3px; background: #f2f2f7; border-radius: 4px; padding: 3px 3px 3px 6px; margin-bottom: 3px; }
+        .ob-chip-name { flex: 1; font-size: 11px; font-weight: 500; color: #3a3a3c; }
+        .ob-mini-btn { width: 15px; height: 15px; border-radius: 50%; border: none; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: default; line-height: 1; }
+        .ob-mini-move { background: #ff9500; color: #fff; }
+        .ob-mini-del { background: #ff3b30; color: #fff; }
+        .ob-quad-discovery .ob-chip-row { background: #d4f5d4; }
+        .ob-quad-discovery .ob-chip-name { color: #1e6b1e; }
+        .ob-cw-hint { font-size: 10px; color: #8e8e93; text-align: center; margin-bottom: 5px; }
+        /* Step 2 animation — chips hidden until animated in */
+        .ob-anim-chip { opacity: 0; }
         @keyframes ob-chip-on { 0%, 18% { opacity: 1; } 23%, 100% { opacity: 0; } }
         @keyframes ob-box-on { 0%, 20% { border-color: #3a3a3c; background: #f5f5f5; } 25%, 100% { border-color: #e5e5ea; background: #fff; } }
-        .ob-fc-1 { animation: ob-chip-on 6s 0s infinite; }
+        /* Clockwise: 1=Casual TL, 2=Meaningful TR, 3=Spiritual BR, 4=Discovery BL */
+        .ob-fc-1 { animation: ob-chip-on 6s 0s   infinite; }
         .ob-fc-2 { animation: ob-chip-on 6s 1.5s infinite; }
-        .ob-fc-3 { animation: ob-chip-on 6s 3s infinite; }
+        .ob-fc-3 { animation: ob-chip-on 6s 3s   infinite; }
         .ob-fc-4 { animation: ob-chip-on 6s 4.5s infinite; }
-        .ob-fb-1 { animation: ob-box-on 6s 0s infinite; }
-        .ob-fb-2 { animation: ob-box-on 6s 1.5s infinite; }
-        .ob-fb-3 { animation: ob-box-on 6s 3s infinite; }
-        .ob-fb-4 { animation: ob-box-on 6s 4.5s infinite; }
+        .ob-fb-1 { animation: ob-box-on  6s 0s   infinite; }
+        .ob-fb-2 { animation: ob-box-on  6s 1.5s infinite; }
+        .ob-fb-3 { animation: ob-box-on  6s 3s   infinite; }
+        .ob-fb-4 { animation: ob-box-on  6s 4.5s infinite; }
         /* ── How it works ── */
         .how-it-works { text-align: right; padding: 6px 0 0; }
         .how-it-works button { border: none; background: none; color: #8e8e93; font-size: 13px; cursor: pointer; font-family: inherit; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px; }
@@ -334,67 +338,99 @@
     <div class="onboarding-overlay" id="onboarding-overlay">
         <div class="onboarding-card">
             <div class="onboarding-step active" id="ob-step-1">
-                <div class="ob-preview">
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Casual</div>
-                        <span class="ob-preview-chip">Maria</span>
+                <!-- Correct layout: TL=Casual, TR=Meaningful, BL=Discovery, BR=Spiritual -->
+                <div class="ob-quad">
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Casual</div>
+                        <div class="ob-chip-row">
+                            <span class="ob-chip-name">Maria</span>
+                            <button class="ob-mini-btn ob-mini-move" tabindex="-1">→</button>
+                            <button class="ob-mini-btn ob-mini-del" tabindex="-1">×</button>
+                        </div>
                     </div>
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Meaningful</div>
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Meaningful</div>
                     </div>
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Spiritual</div>
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Discovery</div>
                     </div>
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Discovery</div>
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Spiritual</div>
                     </div>
                 </div>
                 <h3>Track spiritual conversations simply</h3>
                 <p>Add a person to the box that matches where the conversation is right now.</p>
             </div>
             <div class="onboarding-step" id="ob-step-2">
-                <div class="ob-flow">
-                    <div class="ob-flow-box ob-fb-1">
-                        <div class="ob-flow-label">Casual</div>
-                        <span class="ob-flow-chip ob-fc-1">Maria</span>
+                <!-- Chips cycle clockwise: Casual→Meaningful→Spiritual→Discovery -->
+                <div class="ob-cw-hint">↻ moves clockwise as conversations deepen</div>
+                <div class="ob-quad">
+                    <div class="ob-quad-box ob-fb-1">
+                        <div class="ob-quad-label">Casual</div>
+                        <div class="ob-chip-row ob-anim-chip ob-fc-1">
+                            <span class="ob-chip-name">Maria</span>
+                        </div>
                     </div>
-                    <div class="ob-flow-arrow">→</div>
-                    <div class="ob-flow-box ob-fb-2">
-                        <div class="ob-flow-label">Meaningful</div>
-                        <span class="ob-flow-chip ob-fc-2">Maria</span>
+                    <div class="ob-quad-box ob-fb-2">
+                        <div class="ob-quad-label">Meaningful</div>
+                        <div class="ob-chip-row ob-anim-chip ob-fc-2">
+                            <span class="ob-chip-name">Maria</span>
+                        </div>
                     </div>
-                    <div class="ob-flow-arrow">→</div>
-                    <div class="ob-flow-box ob-fb-3">
-                        <div class="ob-flow-label">Spiritual</div>
-                        <span class="ob-flow-chip ob-fc-3">Maria</span>
+                    <div class="ob-quad-box ob-fb-4">
+                        <div class="ob-quad-label">Discovery</div>
+                        <div class="ob-chip-row ob-anim-chip ob-fc-4">
+                            <span class="ob-chip-name">Maria</span>
+                        </div>
                     </div>
-                    <div class="ob-flow-arrow">→</div>
-                    <div class="ob-flow-box ob-fb-4">
-                        <div class="ob-flow-label">Discovery</div>
-                        <span class="ob-flow-chip ob-fc-4">Maria</span>
+                    <div class="ob-quad-box ob-fb-3">
+                        <div class="ob-quad-label">Spiritual</div>
+                        <div class="ob-chip-row ob-anim-chip ob-fc-3">
+                            <span class="ob-chip-name">Maria</span>
+                        </div>
                     </div>
                 </div>
                 <h3>Move people as conversations grow</h3>
                 <p>Move someone forward as conversations deepen toward Discovery Bible Study.</p>
             </div>
             <div class="onboarding-step" id="ob-step-3">
-                <div class="ob-preview">
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Casual</div>
-                        <span class="ob-preview-chip">James</span>
-                        <span class="ob-preview-chip">Priya</span>
+                <div class="ob-quad">
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Casual</div>
+                        <div class="ob-chip-row">
+                            <span class="ob-chip-name">James</span>
+                            <button class="ob-mini-btn ob-mini-move" tabindex="-1">→</button>
+                            <button class="ob-mini-btn ob-mini-del" tabindex="-1">×</button>
+                        </div>
+                        <div class="ob-chip-row">
+                            <span class="ob-chip-name">Priya</span>
+                            <button class="ob-mini-btn ob-mini-move" tabindex="-1">→</button>
+                            <button class="ob-mini-btn ob-mini-del" tabindex="-1">×</button>
+                        </div>
                     </div>
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Meaningful</div>
-                        <span class="ob-preview-chip">Lena</span>
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Meaningful</div>
+                        <div class="ob-chip-row">
+                            <span class="ob-chip-name">Lena</span>
+                            <button class="ob-mini-btn ob-mini-move" tabindex="-1">→</button>
+                            <button class="ob-mini-btn ob-mini-del" tabindex="-1">×</button>
+                        </div>
                     </div>
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Spiritual</div>
-                        <span class="ob-preview-chip">David</span>
+                    <div class="ob-quad-box ob-quad-discovery">
+                        <div class="ob-quad-label">Discovery</div>
+                        <div class="ob-chip-row">
+                            <span class="ob-chip-name">Maria</span>
+                            <button class="ob-mini-btn ob-mini-move" tabindex="-1">→</button>
+                            <button class="ob-mini-btn ob-mini-del" tabindex="-1">×</button>
+                        </div>
                     </div>
-                    <div class="ob-preview-box">
-                        <div class="ob-preview-label">Discovery</div>
-                        <span class="ob-preview-chip ob-chip-discovery">Maria</span>
+                    <div class="ob-quad-box">
+                        <div class="ob-quad-label">Spiritual</div>
+                        <div class="ob-chip-row">
+                            <span class="ob-chip-name">David</span>
+                            <button class="ob-mini-btn ob-mini-move" tabindex="-1">→</button>
+                            <button class="ob-mini-btn ob-mini-del" tabindex="-1">×</button>
+                        </div>
                     </div>
                 </div>
                 <h3>Keep track of what matters</h3>
