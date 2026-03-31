@@ -159,10 +159,15 @@
             /* Stronger add-person bar on mobile */
             .add-person-section { border-top: 2px solid #3a3a3c; box-shadow: 0 -4px 20px rgba(0,0,0,0.09); }
             .add-person-input input { background: #fff; }
-            /* Collapsed auth on mobile when logged out */
-            .auth-section:not(.auth-expanded) #auth-form { display: none !important; }
-            .auth-section:not(.auth-expanded) #auth-collapsed { display: flex !important; }
-            .auth-section.auth-expanded #auth-collapsed { display: none; }
+            /* Stronger add-person bar already above; collapsed auth keyed on state classes */
+            /* Logged-out mobile: show collapsed banner, hide form until expanded */
+            .auth-section.auth-logged-out:not(.auth-expanded) #auth-form { display: none !important; }
+            .auth-section.auth-logged-out:not(.auth-expanded) #auth-collapsed { display: flex !important; }
+            .auth-section.auth-expanded #auth-collapsed { display: none !important; }
+            /* Logged-in mobile: hide everything except status row */
+            .auth-section.auth-logged-in #auth-collapsed { display: none !important; }
+            .auth-section.auth-logged-in #auth-form { display: none !important; }
+            .auth-section.auth-logged-in #auth-status { display: flex !important; }
         }
         /* ── Onboarding ── */
         .onboarding-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
@@ -1484,8 +1489,10 @@ function saveConversations() {
 
         function updateAuthUI(user) {
             window._supabaseUser = user; // keep getCurrentUser() in sync
-            document.getElementById('auth-section').style.visibility = 'visible';
-            document.getElementById('auth-section').classList.remove('auth-expanded');
+            const authSection = document.getElementById('auth-section');
+            authSection.style.visibility = 'visible';
+            authSection.classList.remove('auth-expanded', 'auth-logged-in', 'auth-logged-out');
+            authSection.classList.add(user ? 'auth-logged-in' : 'auth-logged-out');
 
             const form      = document.getElementById('auth-form');
             const status    = document.getElementById('auth-status');
