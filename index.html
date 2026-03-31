@@ -153,6 +153,26 @@
             .share-indicator { display: none; }
             .auth-section { padding: 8px 16px; }
         }
+        /* ── Onboarding ── */
+        .onboarding-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .onboarding-overlay.visible { display: flex; }
+        .onboarding-card { background: #fff; border-radius: 16px; padding: 28px 24px 22px; width: 88%; max-width: 320px; display: flex; flex-direction: column; gap: 18px; }
+        .onboarding-step { display: none; }
+        .onboarding-step.active { display: block; }
+        .onboarding-step h3 { font-size: 17px; font-weight: 700; color: #000; margin-bottom: 8px; line-height: 1.3; }
+        .onboarding-step p { font-size: 15px; color: #3a3a3c; line-height: 1.5; }
+        .onboarding-dots { display: flex; gap: 6px; justify-content: center; }
+        .onboarding-dot { width: 8px; height: 8px; border-radius: 4px; background: #c6c6c8; transition: background 0.2s; }
+        .onboarding-dot.active { background: #3a3a3c; }
+        .onboarding-actions { display: flex; gap: 8px; align-items: center; }
+        .onboarding-skip { padding: 10px 12px; border: none; background: transparent; color: #8e8e93; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; }
+        .onboarding-next { flex: 1; padding: 11px; border: none; border-radius: 8px; background: #3a3a3c; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .onboarding-next:active { background: #2c2c2e; }
+        /* ── How it works ── */
+        .how-it-works { text-align: right; padding: 6px 0 0; }
+        .how-it-works button { border: none; background: none; color: #8e8e93; font-size: 13px; cursor: pointer; font-family: inherit; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px; }
+        /* ── Explainer ── */
+        .explainer { padding: 14px 16px 4px; color: #8e8e93; font-size: 13px; text-align: center; line-height: 1.4; }
     </style>
     <script type="module" src="./i18n.js"></script>
     <script src="./pwa.js" defer></script>
@@ -184,8 +204,10 @@
                 <button class="btn btn-primary" onclick="startHere()" data-i18n="conversation_box.start_here">START HERE</button>
                 <button class="btn btn-secondary" onclick="captureSnapshot()" data-i18n="conversation_box.share_btn">SHARE</button>
             </div>
+            <div class="how-it-works"><button onclick="showOnboarding()">How it works</button></div>
         </div>
         <div class="content-wrapper">
+            <p class="explainer">Track where each person is right now, then move them as conversations deepen.</p>
             <div class="conversation-grid">
                 <div class="conversation-box casual">
                     <div class="box-header"><div class="box-title" data-i18n="conversation_box.box_casual">Casual</div></div>
@@ -285,6 +307,32 @@
                 <li data-i18n="conversation_box.tutorial_step3"><b>Click the share button</b> to share progress with other disciples.</li>
             </ol>
             <button class="btn btn-primary" onclick="closeTutorial()" data-i18n="conversation_box.got_it">Got it!</button>
+        </div>
+    </div>
+    <!-- Onboarding overlay -->
+    <div class="onboarding-overlay" id="onboarding-overlay">
+        <div class="onboarding-card">
+            <div class="onboarding-step active" id="ob-step-1">
+                <h3>Track spiritual conversations simply</h3>
+                <p>Add a person to the box that matches where the conversation is right now.</p>
+            </div>
+            <div class="onboarding-step" id="ob-step-2">
+                <h3>Move people as conversations grow</h3>
+                <p>Casual → Meaningful → Spiritual → Discovery</p>
+            </div>
+            <div class="onboarding-step" id="ob-step-3">
+                <h3>Keep track of what matters</h3>
+                <p>Use this to remember people, pray intentionally, and help move toward Discovery Bible Study.</p>
+            </div>
+            <div class="onboarding-dots">
+                <div class="onboarding-dot active" id="ob-dot-1"></div>
+                <div class="onboarding-dot" id="ob-dot-2"></div>
+                <div class="onboarding-dot" id="ob-dot-3"></div>
+            </div>
+            <div class="onboarding-actions">
+                <button class="onboarding-skip" onclick="closeOnboarding()">Skip</button>
+                <button class="onboarding-next" id="ob-next-btn" onclick="nextOnboardingStep()">Next</button>
+            </div>
         </div>
     </div>
     <script>
@@ -539,6 +587,7 @@ function saveConversations() {
             updateDisplay();
             preloadImages();
             appInitialized = true;
+            if (!localStorage.getItem('onboarding-seen')) showOnboarding();
         }
 
         // Wait for WordPress progress system to load
@@ -1069,7 +1118,10 @@ function saveConversations() {
                 if (conversations[box].length === 0) {
                     const emptyEl = document.createElement('div');
                     emptyEl.className = 'empty-state';
-                    emptyEl.textContent = window.t('conversation_box.no_conversations');
+                    const allEmpty = !Object.values(conversations).some(a => a.length > 0);
+                    emptyEl.textContent = (box === 'casual' && allEmpty)
+                        ? 'Start by adding one person you connected with this week.'
+                        : window.t('conversation_box.no_conversations');
                     listElement.appendChild(emptyEl);
                 } else {
                     conversations[box].forEach(person => {
@@ -1146,9 +1198,42 @@ function saveConversations() {
             return item;
         }
 
+        // ── Onboarding ────────────────────────────────────────────────────────
+        let _obStep = 1;
+        const OB_STEPS = 3;
+
+        function showOnboarding() {
+            _obStep = 1;
+            _setObStep(1);
+            document.getElementById('onboarding-overlay').classList.add('visible');
+        }
+
+        function closeOnboarding() {
+            document.getElementById('onboarding-overlay').classList.remove('visible');
+            localStorage.setItem('onboarding-seen', '1');
+        }
+
+        function nextOnboardingStep() {
+            if (_obStep < OB_STEPS) {
+                _obStep++;
+                _setObStep(_obStep);
+            } else {
+                closeOnboarding();
+            }
+        }
+
+        function _setObStep(n) {
+            for (let i = 1; i <= OB_STEPS; i++) {
+                document.getElementById(`ob-step-${i}`).classList.toggle('active', i === n);
+                document.getElementById(`ob-dot-${i}`).classList.toggle('active', i === n);
+            }
+            document.getElementById('ob-next-btn').textContent = n < OB_STEPS ? 'Next' : 'Start tracking';
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         function showNotification(message) {
-            const notification = document.createElement('div'); 
-            notification.className = 'notification'; 
+            const notification = document.createElement('div');
+            notification.className = 'notification';
             notification.textContent = message;
             document.body.appendChild(notification);
             setTimeout(() => notification.remove(), 3000);
