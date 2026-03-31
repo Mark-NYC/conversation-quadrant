@@ -127,6 +127,10 @@
         .auth-status { display: flex; align-items: center; justify-content: space-between; }
         .auth-status-text { font-size: 13px; color: #8e8e93; }
         .auth-logout-btn { padding: 6px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #e5e5ea; color: #3a3a3c; font-family: inherit; }
+        /* Collapsed auth banner — mobile only, logged-out state */
+        #auth-collapsed { display: none; align-items: center; gap: 8px; }
+        .auth-collapsed-text { font-size: 13px; color: #8e8e93; flex: 1; }
+        .auth-collapsed-btn { padding: 6px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #3a3a3c; color: #fff; font-family: inherit; flex-shrink: 0; }
         @media (max-width: 767px) {
             .auth-section input { font-size: 16px; }
             .action-btn { width: 36px; height: 36px; border-radius: 18px; font-size: 16px; }
@@ -152,6 +156,13 @@
             .conversation-box.collapsed .box-count { background: #e5e5ea; }
             .share-indicator { display: none; }
             .auth-section { padding: 8px 16px; }
+            /* Stronger add-person bar on mobile */
+            .add-person-section { border-top: 2px solid #3a3a3c; box-shadow: 0 -4px 20px rgba(0,0,0,0.09); }
+            .add-person-input input { background: #fff; }
+            /* Collapsed auth on mobile when logged out */
+            .auth-section:not(.auth-expanded) #auth-form { display: none !important; }
+            .auth-section:not(.auth-expanded) #auth-collapsed { display: flex; }
+            .auth-section.auth-expanded #auth-collapsed { display: none; }
         }
         /* ── Onboarding ── */
         .onboarding-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
@@ -207,6 +218,10 @@
     <div class="container">
         <!-- Auth section: shown at top, collapses to status row when signed in -->
         <div class="auth-section" id="auth-section">
+            <div id="auth-collapsed" style="display:none">
+                <span class="auth-collapsed-text">Sign in to save across devices</span>
+                <button class="auth-collapsed-btn" onclick="toggleAuthForm()">Sign in</button>
+            </div>
             <div id="auth-form" style="display:none">
                 <input type="email" id="auth-email" placeholder="Email" data-i18n-placeholder="auth.email_placeholder">
                 <input type="password" id="auth-password" placeholder="Password" data-i18n-placeholder="auth.password_placeholder">
@@ -1465,9 +1480,14 @@ function saveConversations() {
         // ── Supabase Auth ──────────────────────────────────────────────────────
 
         // Update the auth UI and reload data whenever auth state changes.
+        function toggleAuthForm() {
+            document.getElementById('auth-section').classList.toggle('auth-expanded');
+        }
+
         function updateAuthUI(user) {
             window._supabaseUser = user; // keep getCurrentUser() in sync
             document.getElementById('auth-section').style.visibility = 'visible';
+            document.getElementById('auth-section').classList.remove('auth-expanded');
 
             const form   = document.getElementById('auth-form');
             const status = document.getElementById('auth-status');
