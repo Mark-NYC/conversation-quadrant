@@ -161,7 +161,7 @@
             .add-person-input input { background: #fff; }
             /* Collapsed auth on mobile when logged out */
             .auth-section:not(.auth-expanded) #auth-form { display: none !important; }
-            .auth-section:not(.auth-expanded) #auth-collapsed { display: flex; }
+            .auth-section:not(.auth-expanded) #auth-collapsed { display: flex !important; }
             .auth-section.auth-expanded #auth-collapsed { display: none; }
         }
         /* ── Onboarding ── */
@@ -218,7 +218,7 @@
     <div class="container">
         <!-- Auth section: shown at top, collapses to status row when signed in -->
         <div class="auth-section" id="auth-section">
-            <div id="auth-collapsed" style="display:none">
+            <div id="auth-collapsed">
                 <span class="auth-collapsed-text">Sign in to save across devices</span>
                 <button class="auth-collapsed-btn" onclick="toggleAuthForm()">Sign in</button>
             </div>
