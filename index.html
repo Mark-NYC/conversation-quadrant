@@ -1486,13 +1486,15 @@ function saveConversations() {
             document.getElementById('auth-section').style.visibility = 'visible';
             document.getElementById('auth-section').classList.remove('auth-expanded');
 
-            const form   = document.getElementById('auth-form');
-            const status = document.getElementById('auth-status');
-            const text   = document.getElementById('auth-status-text');
+            const form      = document.getElementById('auth-form');
+            const status    = document.getElementById('auth-status');
+            const text      = document.getElementById('auth-status-text');
+            const collapsed = document.getElementById('auth-collapsed');
 
             if (user) {
-                form.style.display   = 'none';
-                status.style.display = 'flex';
+                collapsed.style.display = 'none';
+                form.style.display      = 'none';
+                status.style.display    = 'flex';
                 text.textContent     = window.t('auth.signed_in_as', { email: user.email });
 
                 // Reload from Supabase when auth state changes to a new user.
@@ -1504,8 +1506,9 @@ function saveConversations() {
                     });
                 }
             } else {
-                form.style.display   = 'block';
-                status.style.display = 'none';
+                collapsed.style.display = '';
+                form.style.display      = 'block';
+                status.style.display    = 'none';
                 text.textContent     = window.t('auth.not_signed_in');
 
                 // Revert to localStorage when signed out
