@@ -204,9 +204,7 @@
         .ob-fb-2 { animation: ob-box-on  6s 1.5s infinite; }
         .ob-fb-3 { animation: ob-box-on  6s 3s   infinite; }
         .ob-fb-4 { animation: ob-box-on  6s 4.5s infinite; }
-        /* ── How it works ── */
-        .how-it-works { text-align: right; padding: 6px 0 0; }
-        .how-it-works button { border: none; background: none; color: #8e8e93; font-size: 13px; cursor: pointer; font-family: inherit; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px; }
+
         /* ── Explainer ── */
         .explainer { padding: 14px 16px 4px; color: #8e8e93; font-size: 13px; text-align: center; line-height: 1.4; }
     </style>
@@ -241,10 +239,9 @@
         </div>
         <div class="controls">
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="startHere()" data-i18n="conversation_box.start_here">START HERE</button>
-                <button class="btn btn-secondary" onclick="captureSnapshot()" data-i18n="conversation_box.share_btn">SHARE</button>
+                <button class="btn btn-secondary" onclick="showOnboarding()">How it works</button>
+                <button class="btn btn-primary" onclick="captureSnapshot()" data-i18n="conversation_box.share_btn">SHARE</button>
             </div>
-            <div class="how-it-works"><button onclick="showOnboarding()">How it works</button></div>
         </div>
         <div class="content-wrapper">
             <p class="explainer">Track where each person is right now, then move them as conversations deepen.</p>
