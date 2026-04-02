@@ -131,47 +131,7 @@
         #auth-collapsed { display: none; align-items: center; gap: 8px; }
         .auth-collapsed-text { font-size: 13px; color: #8e8e93; flex: 1; }
         .auth-collapsed-btn { padding: 6px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #3a3a3c; color: #fff; font-family: inherit; flex-shrink: 0; }
-@media (max-width: 767px) {
-    .top-pill-nav {
-        padding: 10px 12px 4px;
-        background: #f2f2f7 !important;
-    }
-
-    .top-pill-btn,
-    .top-pill-btn:link,
-    .top-pill-btn:visited,
-    .top-pill-btn:hover,
-    .top-pill-btn:active {
-        background: transparent !important;
-        color: #111 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        min-height: auto;
-        padding: 4px 0;
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        width: auto;
-        max-width: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        text-decoration: none;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-
-    .top-pill-btn svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-        stroke: #111 !important;
-        color: #111 !important;
-    }
-}
+        @media (max-width: 767px) {
             .auth-section input { font-size: 16px; }
             .action-btn { width: 36px; height: 36px; border-radius: 18px; font-size: 16px; }
             .btn { min-height: 44px; }
@@ -253,24 +213,15 @@
 
         /* ── Explainer ── */
         .explainer { padding: 14px 16px 4px; color: #8e8e93; font-size: 13px; text-align: center; line-height: 1.4; }
-        .top-pill-nav { display: flex; justify-content: center; align-items: center; padding: 14px 16px 6px; background: #f2f2f7; }
-        .top-pill-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 8px 16px; border-radius: 999px; background: #000; color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; line-height: 1; border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.10); transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease; }
-        .top-pill-btn:active { transform: scale(0.98); opacity: 0.9; }
-
     </style>
     <script type="module" src="./i18n.js"></script>
     <script src="./pwa.js" defer></script>
 </head>
 <body>
     <div class="sync-indicator" id="sync-indicator" data-i18n="sync.syncing">Syncing...</div>
-    <div class="top-pill-nav">
-        <a href="https://obey.tools/view-progress.html" class="top-pill-btn" aria-label="View Map">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 21s-6-5.33-6-11a6 6 0 1 1 12 0c0 5.67-6 11-6 11z"></path>
-                <circle cx="12" cy="10" r="2.5"></circle>
-            </svg>
-            <span>View Map</span>
-        </a>
+    <div style="text-align:center; padding:20px 0 8px; display:flex; justify-content:center; align-items:center; gap:16px;">
+        <a href="https://obey.tools/index.html" style="font-size:13px; color:#666; text-decoration:none;">Home</a>
+        <a href="https://obey.tools/view-progress.html" style="font-size:13px; color:#666; text-decoration:none;">View Map →</a>
     </div>
     <div class="container">
         <!-- Auth section: shown at top, collapses to status row when signed in -->
