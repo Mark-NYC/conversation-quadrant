@@ -232,14 +232,8 @@
 </head>
 <body>
     <div class="sync-indicator" id="sync-indicator" data-i18n="sync.syncing">Syncing...</div>
-    <div class="top-map-nav">
-        <a href="https://obey.tools/view-progress.html" class="top-map-link" aria-label="View Map">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 21s-6-5.33-6-11a6 6 0 1 1 12 0c0 5.67-6 11-6 11z"></path>
-                <circle cx="12" cy="10" r="2.5"></circle>
-            </svg>
-            <span>VIEW MAP</span>
-        </a>
+    <div style="text-align:center; padding:20px 0 8px; display:flex; justify-content:center; align-items:center; gap:16px;">
+        <a href="./view-progress.html" style="font-size:13px; color:#666; text-decoration:none;">View Map →</a>
     </div>
     <div class="container">
         <!-- Auth section: shown at top, collapses to status row when signed in -->
@@ -379,7 +373,7 @@
         <div class="onboarding-card">
             <div class="onboarding-step active">
                 <h3>See local progress on the map</h3>
-                <p>Share your approximate location so your conversations appear in the right area on obey.tools. You'll be able to see what's happening near you and how your updates fit into the bigger picture.</p>
+                <p>Share your approximate location so your conversations appear in the right area. You'll be able to see what's happening near you and how your updates fit into the bigger picture.</p>
                 <p style="font-size:12px; color:#8e8e93; margin-top:8px;">Approximate location only. Not your exact address.</p>
             </div>
             <div class="onboarding-actions">
