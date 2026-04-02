@@ -131,25 +131,40 @@
         #auth-collapsed { display: none; align-items: center; gap: 8px; }
         .auth-collapsed-text { font-size: 13px; color: #8e8e93; flex: 1; }
         .auth-collapsed-btn { padding: 6px 14px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #3a3a3c; color: #fff; font-family: inherit; flex-shrink: 0; }
-        @media (max-width: 767px) {
-            .top-pill-nav { padding: 10px 12px 4px; }
-            .top-pill-btn {
-                min-height: auto;
-                padding: 4px 0;
-                font-size: 12px;
-                font-weight: 600;
-                letter-spacing: 0.04em;
-                text-transform: uppercase;
-                width: auto;
-                max-width: none;
-                background: transparent;
-                color: #fff;
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
-                gap: 6px;
-            }
-            .top-pill-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+@media (max-width: 767px) {
+    .top-pill-nav {
+        padding: 10px 12px 4px;
+        background: #f2f2f7;
+    }
+
+    .top-pill-btn {
+        min-height: auto;
+        padding: 4px 0;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        width: auto;
+        max-width: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+
+        background: #f2f2f7;
+        color: #111;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .top-pill-btn svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        color: #111;
+    }
+}
             .auth-section input { font-size: 16px; }
             .action-btn { width: 36px; height: 36px; border-radius: 18px; font-size: 16px; }
             .btn { min-height: 44px; }
