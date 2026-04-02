@@ -134,10 +134,19 @@
 @media (max-width: 767px) {
     .top-pill-nav {
         padding: 10px 12px 4px;
-        background: #f2f2f7;
+        background: #f2f2f7 !important;
     }
 
-    .top-pill-btn {
+    .top-pill-btn,
+    .top-pill-btn:link,
+    .top-pill-btn:visited,
+    .top-pill-btn:hover,
+    .top-pill-btn:active {
+        background: transparent !important;
+        color: #111 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
         min-height: auto;
         padding: 4px 0;
         font-size: 12px;
@@ -150,19 +159,17 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-
-        background: #f2f2f7;
-        color: #111;
-        border: none;
-        border-radius: 0;
-        box-shadow: none;
+        text-decoration: none;
+        -webkit-appearance: none;
+        appearance: none;
     }
 
     .top-pill-btn svg {
         width: 14px;
         height: 14px;
         flex-shrink: 0;
-        color: #111;
+        stroke: #111 !important;
+        color: #111 !important;
     }
 }
             .auth-section input { font-size: 16px; }
