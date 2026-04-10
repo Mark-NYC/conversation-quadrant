@@ -456,7 +456,8 @@
         @media (min-width: 768px) { .person-details-sheet { border-radius: 16px; max-height: 70vh; padding: 24px; } }
         .details-drag-handle { width: 36px; height: 4px; background: #c6c6c8; border-radius: 2px; margin: 0 auto -4px; flex-shrink: 0; }
         @media (min-width: 768px) { .details-drag-handle { display: none; } }
-        .details-person-name { font-size: 20px; font-weight: 700; color: #000; line-height: 1.2; }
+        .details-person-name { font-size: 20px; font-weight: 700; color: #000; line-height: 1.2; width: 100%; border: none; border-bottom: 1.5px solid transparent; background: transparent; padding: 0 0 2px; outline: none; font-family: inherit; transition: border-bottom-color 0.15s; }
+        .details-person-name:focus { border-bottom-color: #ff9500; }
         .details-quadrant { font-size: 12px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
         .details-field { display: flex; flex-direction: column; gap: 5px; }
         .details-field label { font-size: 12px; font-weight: 600; color: #3a3a3c; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -754,7 +755,7 @@
         <div class="person-details-sheet" id="person-details-sheet">
             <div class="details-drag-handle"></div>
             <div>
-                <div class="details-person-name" id="details-person-name"></div>
+                <input type="text" class="details-person-name" id="details-person-name" placeholder="Name">
                 <div class="details-quadrant" id="details-quadrant"></div>
             </div>
             <div class="details-field">
@@ -1697,7 +1698,7 @@ function saveConversations() {
         function openPersonDetails(name, box) {
             _detailsPerson = { name, box };
             const person = (conversations[box] || []).find(p => p.name === name);
-            document.getElementById('details-person-name').textContent = name;
+            document.getElementById('details-person-name').value = name;
             document.getElementById('details-quadrant').textContent =
                 box.charAt(0).toUpperCase() + box.slice(1);
             document.getElementById('details-next-step').value =
@@ -1719,6 +1720,19 @@ function saveConversations() {
             const { name, box } = _detailsPerson;
             const person = (conversations[box] || []).find(p => p.name === name);
             if (person) {
+                // Handle rename (same duplicate-check logic as the old saveEditedName)
+                const newName = document.getElementById('details-person-name').value.trim();
+                if (!newName) {
+                    showNotification(window.t('conversation_box.enter_name'));
+                    return;
+                }
+                if (newName !== name) {
+                    if (Object.values(conversations).flat().some(p => p.name === newName)) {
+                        showNotification(window.t('conversation_box.name_exists'));
+                        return; // keep modal open so user can correct it
+                    }
+                    person.name = newName;
+                }
                 person.next_step = document.getElementById('details-next-step').value.trim() || null;
                 person.person_note = document.getElementById('details-note').value.trim() || null;
                 person.follow_up_date = document.getElementById('details-follow-up-date').value || null;
