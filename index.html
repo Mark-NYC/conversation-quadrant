@@ -452,8 +452,10 @@
         /* ── Person Details Modal ── */
         #person-details-overlay { align-items: flex-end; }
         @media (min-width: 768px) { #person-details-overlay { align-items: center; } }
-        .person-details-sheet { background: #fff; width: 100%; max-width: 480px; border-radius: 16px 16px 0 0; padding: 16px 20px 36px; display: flex; flex-direction: column; gap: 16px; max-height: 88vh; overflow-y: auto; }
+        .person-details-sheet { background: #fff; width: 100%; max-width: 480px; border-radius: 16px 16px 0 0; padding: 16px 20px 36px; display: flex; flex-direction: column; gap: 16px; max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        @supports (height: 1dvh) { .person-details-sheet { max-height: 88dvh; } }
         @media (min-width: 768px) { .person-details-sheet { border-radius: 16px; max-height: 70vh; padding: 24px; } }
+        .details-name-hint { font-size: 11px; color: #c6c6c8; margin-top: 2px; }
         .details-drag-handle { width: 36px; height: 4px; background: #c6c6c8; border-radius: 2px; margin: 0 auto -4px; flex-shrink: 0; }
         @media (min-width: 768px) { .details-drag-handle { display: none; } }
         .details-person-name { font-size: 20px; font-weight: 700; color: #000; line-height: 1.2; width: 100%; border: none; border-bottom: 1.5px solid transparent; background: transparent; padding: 0 0 2px; outline: none; font-family: inherit; transition: border-bottom-color 0.15s; }
@@ -756,6 +758,7 @@
             <div class="details-drag-handle"></div>
             <div>
                 <input type="text" class="details-person-name" id="details-person-name" placeholder="Name">
+                <div class="details-name-hint">Tap to rename</div>
                 <div class="details-quadrant" id="details-quadrant"></div>
             </div>
             <div class="details-field">
@@ -2010,6 +2013,13 @@ function saveConversations() {
         });
         
         window.addEventListener('resize', updateDisplay);
+
+        // Scroll focused detail fields into view when the mobile keyboard opens
+        ['details-next-step', 'details-note', 'details-follow-up-date'].forEach(id => {
+            document.getElementById(id).addEventListener('focus', function() {
+                setTimeout(() => this.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 300);
+            });
+        });
 
         // ── Supabase Auth ──────────────────────────────────────────────────────
 
