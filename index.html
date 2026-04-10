@@ -449,6 +449,26 @@
         .ob-fb-3 { animation: ob-box-on  6s 3s   infinite; }
         .ob-fb-4 { animation: ob-box-on  6s 4.5s infinite; }
 
+        /* ── Person Details Modal ── */
+        #person-details-overlay { align-items: flex-end; }
+        @media (min-width: 768px) { #person-details-overlay { align-items: center; } }
+        .person-details-sheet { background: #fff; width: 100%; max-width: 480px; border-radius: 16px 16px 0 0; padding: 16px 20px 36px; display: flex; flex-direction: column; gap: 16px; max-height: 88vh; overflow-y: auto; }
+        @media (min-width: 768px) { .person-details-sheet { border-radius: 16px; max-height: 70vh; padding: 24px; } }
+        .details-drag-handle { width: 36px; height: 4px; background: #c6c6c8; border-radius: 2px; margin: 0 auto -4px; flex-shrink: 0; }
+        @media (min-width: 768px) { .details-drag-handle { display: none; } }
+        .details-person-name { font-size: 20px; font-weight: 700; color: #000; line-height: 1.2; width: 100%; border: none; border-bottom: 1.5px solid transparent; background: transparent; padding: 0 0 2px; outline: none; font-family: inherit; transition: border-bottom-color 0.15s; }
+        .details-person-name:focus { border-bottom-color: #ff9500; }
+        .details-quadrant { font-size: 12px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+        .details-field { display: flex; flex-direction: column; gap: 5px; }
+        .details-field label { font-size: 12px; font-weight: 600; color: #3a3a3c; text-transform: uppercase; letter-spacing: 0.4px; }
+        .details-field input, .details-field textarea { width: 100%; padding: 10px 12px; border: 1px solid #c6c6c8; border-radius: 8px; font-size: 16px; font-family: inherit; color: #000; background: #f2f2f7; box-sizing: border-box; outline: none; -webkit-appearance: none; }
+        .details-field input:focus, .details-field textarea:focus { border-color: #ff9500; background: #fff; }
+        .details-field textarea { resize: none; min-height: 70px; }
+        .details-actions { display: flex; gap: 10px; padding-top: 2px; }
+        .details-actions .btn { flex: 1; min-height: 44px; }
+        /* Tiny indicator dot — shown only when a person has saved details */
+        .details-dot { width: 6px; height: 6px; border-radius: 50%; background: #8e8e93; display: inline-block; flex-shrink: 0; align-self: center; margin-left: 5px; }
+
         /* ── Explainer ── */
         .explainer { padding: 14px 16px 4px; color: #8e8e93; font-size: 13px; text-align: center; line-height: 1.4; }
 
@@ -730,6 +750,33 @@
             <button class="btn btn-primary" onclick="closeTutorial()" data-i18n="conversation_box.got_it">Got it!</button>
         </div>
     </div>
+    <!-- Person details bottom sheet -->
+    <div class="onboarding-overlay" id="person-details-overlay" onclick="handleDetailsOverlayClick(event)">
+        <div class="person-details-sheet" id="person-details-sheet">
+            <div class="details-drag-handle"></div>
+            <div>
+                <input type="text" class="details-person-name" id="details-person-name" placeholder="Name">
+                <div class="details-quadrant" id="details-quadrant"></div>
+            </div>
+            <div class="details-field">
+                <label for="details-next-step">Next step</label>
+                <input type="text" id="details-next-step" placeholder="What's the next step?">
+            </div>
+            <div class="details-field">
+                <label for="details-note">Note</label>
+                <textarea id="details-note" placeholder="Optional note..."></textarea>
+            </div>
+            <div class="details-field">
+                <label for="details-follow-up-date">Follow-up date</label>
+                <input type="date" id="details-follow-up-date">
+            </div>
+            <div class="details-actions">
+                <button class="btn btn-secondary" onclick="closePersonDetails()">Cancel</button>
+                <button class="btn btn-primary" onclick="savePersonDetails()">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Location permission popup -->
     <div class="onboarding-overlay" id="loc-permission-overlay">
         <div class="onboarding-card">
@@ -975,7 +1022,7 @@ function saveConversations() {
             try {
                 const { data: people, error } = await window.supabase
                     .from('conversation_people')
-                    .select('person_name, box_name, color')
+                    .select('person_name, box_name, color, next_step, person_note, follow_up_date')
                     .eq('user_id', userId);
 
                 if (error) throw error;
@@ -985,7 +1032,7 @@ function saveConversations() {
                 people.forEach(row => {
                     if (conversations[row.box_name]) {
                         // schema has no date column; use empty string as placeholder
-                        conversations[row.box_name].push({ name: row.person_name, date: '', color: row.color });
+                        conversations[row.box_name].push({ name: row.person_name, date: '', color: row.color, next_step: row.next_step || null, person_note: row.person_note || null, follow_up_date: row.follow_up_date || null });
                     }
                 });
                 // Deduplicate by name within each box (guards against prior save-race doubles in DB)
@@ -1050,7 +1097,7 @@ function saveConversations() {
                 const peopleRows = [];
                 ['casual', 'meaningful', 'spiritual', 'discovery'].forEach(box => {
                     (conversations[box] || []).forEach(p => {
-                        peopleRows.push({ user_id: userId, person_name: p.name, box_name: box, color: p.color || null });
+                        peopleRows.push({ user_id: userId, person_name: p.name, box_name: box, color: p.color || null, next_step: p.next_step || null, person_note: p.person_note || null, follow_up_date: p.follow_up_date || null });
                     });
                 });
                 if (peopleRows.length > 0) await window.supabase.from('conversation_people').insert(peopleRows);
@@ -1632,9 +1679,72 @@ function saveConversations() {
 
         function deleteConversation(name, fromBox) {
             if (confirm(window.t('conversation_box.confirm_remove', { name }))) {
-                conversations[fromBox] = conversations[fromBox].filter(p => p.name !== name); 
+                conversations[fromBox] = conversations[fromBox].filter(p => p.name !== name);
                 saveConversations();
                 updateDisplay();
+            }
+        }
+
+        // ── Per-person details ────────────────────────────────────────────────
+
+        let _detailsPerson = null; // { name, box } for the currently-open modal
+
+        function hasPersonDetails(name, box) {
+            const person = (conversations[box] || []).find(p => p.name === name);
+            if (!person) return false;
+            return !!(person.next_step || person.person_note || person.follow_up_date);
+        }
+
+        function openPersonDetails(name, box) {
+            _detailsPerson = { name, box };
+            const person = (conversations[box] || []).find(p => p.name === name);
+            document.getElementById('details-person-name').value = name;
+            document.getElementById('details-quadrant').textContent =
+                box.charAt(0).toUpperCase() + box.slice(1);
+            document.getElementById('details-next-step').value =
+                (person && person.next_step) || '';
+            document.getElementById('details-note').value =
+                (person && person.person_note) || '';
+            document.getElementById('details-follow-up-date').value =
+                (person && person.follow_up_date) || '';
+            document.getElementById('person-details-overlay').classList.add('visible');
+        }
+
+        function closePersonDetails() {
+            _detailsPerson = null;
+            document.getElementById('person-details-overlay').classList.remove('visible');
+        }
+
+        function savePersonDetails() {
+            if (!_detailsPerson) return;
+            const { name, box } = _detailsPerson;
+            const person = (conversations[box] || []).find(p => p.name === name);
+            if (person) {
+                // Handle rename (same duplicate-check logic as the old saveEditedName)
+                const newName = document.getElementById('details-person-name').value.trim();
+                if (!newName) {
+                    showNotification(window.t('conversation_box.enter_name'));
+                    return;
+                }
+                if (newName !== name) {
+                    if (Object.values(conversations).flat().some(p => p.name === newName)) {
+                        showNotification(window.t('conversation_box.name_exists'));
+                        return; // keep modal open so user can correct it
+                    }
+                    person.name = newName;
+                }
+                person.next_step = document.getElementById('details-next-step').value.trim() || null;
+                person.person_note = document.getElementById('details-note').value.trim() || null;
+                person.follow_up_date = document.getElementById('details-follow-up-date').value || null;
+                saveConversations();
+                updateDisplay();
+            }
+            closePersonDetails();
+        }
+
+        function handleDetailsOverlayClick(event) {
+            if (event.target === document.getElementById('person-details-overlay')) {
+                closePersonDetails();
             }
         }
 
@@ -1689,9 +1799,15 @@ function saveConversations() {
             }
             
             nameSpan.appendChild(document.createTextNode(name));
-            nameSpan.addEventListener('click', () => { 
-                addHapticFeedback(nameSpan); 
-                showEditNamePrompt(name, box); 
+            if (hasPersonDetails(name, box)) {
+                const dot = document.createElement('span');
+                dot.className = 'details-dot';
+                dot.title = 'Has notes';
+                nameSpan.appendChild(dot);
+            }
+            nameSpan.addEventListener('click', () => {
+                addHapticFeedback(nameSpan);
+                openPersonDetails(name, box);
             });
             
             const actions = document.createElement('div'); 
