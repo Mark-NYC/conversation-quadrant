@@ -366,6 +366,19 @@
         .auth-buttons button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
         .auth-btn-primary { background: #6e6e73; color: #fff; }
         .auth-btn-secondary { background: #e5e5ea; color: #3a3a3c; }
+        .auth-forgot-btn {
+            display: block;
+            width: 100%;
+            margin-top: 6px;
+            padding: 6px;
+            background: none;
+            border: none;
+            color: #8e8e93;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            font-family: inherit;
+        }
         /* Collapsed auth banner — mobile only, logged-out state */
         #auth-collapsed { display: none; align-items: center; gap: 8px; }
         .auth-collapsed-text { font-size: 13px; color: #8e8e93; flex: 1; }
@@ -612,6 +625,7 @@
                     <button class="auth-btn-primary" onclick="authSignUp()" data-i18n="auth.sign_up">Sign Up</button>
                     <button class="auth-btn-secondary" onclick="authLogIn()" data-i18n="auth.log_in">Log In</button>
                 </div>
+                <button type="button" class="auth-forgot-btn" onclick="authForgotPassword()">Forgot password?</button>
             </div>
         </div>
         <div class="header">
@@ -2146,8 +2160,16 @@ function saveConversations() {
                     emailRedirectTo: 'https://conversationquadrant.com/'
                 }
             });
-            if (error) { showNotification(error.message); }
-            else        { showNotification(window.t('auth.check_email')); }
+            if (error) {
+                const msg = error.message.toLowerCase();
+                if (msg.includes('already registered') || msg.includes('already been registered')) {
+                    showNotification('Email already registered — try Log In or click Forgot Password.');
+                } else {
+                    showNotification(error.message);
+                }
+            } else {
+                showNotification(window.t('auth.check_email'));
+            }
         }
 
         async function authLogIn() {
@@ -2160,6 +2182,17 @@ function saveConversations() {
         async function authLogOut() {
             const { error } = await window.supabase.auth.signOut();
             if (error) showNotification(error.message);
+        }
+
+        async function authForgotPassword() {
+            const emailEl = document.getElementById('auth-email');
+            const email   = emailEl ? emailEl.value.trim() : '';
+            if (!email) { showNotification('Enter your email address first.'); return; }
+            const { error } = await window.supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/reset-password.html'
+            });
+            if (error) showNotification(error.message);
+            else       showNotification('Password reset email sent — check your inbox.');
         }
 
         // On page load: restore session and listen for future auth changes.
