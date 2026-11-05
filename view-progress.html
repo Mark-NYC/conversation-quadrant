@@ -1622,19 +1622,16 @@
         startTickerScroll()
     }
 
-    // Seed from already-loaded mapData so feed is populated immediately.
-    // Also primes tickerSeenKeys so duplicates from the first poll are dropped.
-    function seedTickerFromMapData() {
-        const sorted = [...mapData.conversations]
-            .filter(ev => ev.created_at)
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, TICKER_MAX)
-
-        tickerItems = sorted.map(ev => ({
-            ts:    ev.created_at,
-            city:  ev.city       || '',
-            type:  ev.event_type || 'update',
-            count: ev.count      || 1
+    // Initial feed uses server-side privacy-safe recent events, not daily map totals.
+    async function seedTickerFromMapData() {
+        const since = new Date(Date.now() - 30 * 86400000).toISOString()
+        const { data, error } = await window.supabase.rpc('map_recent', { since, max_rows: TICKER_MAX })
+        if (error) { console.warn('ticker seed error:', error.message); return }
+        tickerItems = (data || []).map(ev => ({
+            ts: ev.created_at,
+            city: ev.place_label || ev.city || '',
+            type: ev.event_type || 'update',
+            count: ev.count || 1
         }))
         tickerSeenKeys = new Set(tickerItems.map(tickerKey))
         renderTickerFeed()
