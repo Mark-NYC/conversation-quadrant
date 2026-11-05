@@ -1364,14 +1364,13 @@
                 .from('church_assessments')
                 .select('latitude, longitude, location_text, city, leader_name, baptism_count, church_generation, updated_at')
                 .eq('is_church', true),
-            window.supabase
-                .from('conversation_events')
-                .select('latitude, longitude, location_text, city, event_type, count, created_at')
+            // Aggregate rows only: respects network visibility without exposing user activity.
+            window.supabase.rpc('map_events')
         ])
 
         if (churchError || convoError) {
             console.error('church_assessments error:', churchError)
-            console.error('conversation_events error:', convoError)
+            console.error('map_events error:', convoError)
             const msg = churchError?.message || convoError?.message || 'Error loading map data'
             document.getElementById('map-last-updated').textContent = 'Error loading data: ' + msg
             notify('Error loading data')
@@ -1537,12 +1536,14 @@
         const baptisms = rows.reduce((s, r) => s + (r.baptism_count || 0), 0)
         const gen2     = rows.filter(r => r.church_generation === 'gen2+').length
 
-        let spiritual = 0
-        const { data: convData } = await window.supabase
-            .from('conversation_events')
-            .select('count')
-            .eq('event_type', 'spiritual')
-        if (convData) spiritual = convData.reduce((s, r) => s + (r.count || 0), 0)
+        // The server returns period-aware totals without exposing individual records.
+        const { data: progress, error: progressError } = await window.supabase.rpc('progress_metrics', { days })
+        if (progressError || !progress) {
+            console.error('progress_metrics error:', progressError)
+            section.textContent = 'Error loading conversation totals.'
+            return
+        }
+        const spiritual = Number(progress.cur?.sp || 0)
 
         const label = days === 0 ? 'All Time' :
                       days === 7  ? 'Last 7 Days' :
@@ -1586,7 +1587,6 @@
     let tickerItems        = []       // newest first
     let tickerSeenKeys     = new Set() // deduplication — composite ts|city|type keys
     let tickerInitialized  = false
-    let tickerSubscription = null
     let tickerScrollTimer  = null
     let tickerPollTimer    = null     // 10s safety-sync interval
     let tickerMinimized    = localStorage.getItem('vp_ticker_minimized') === 'true'
@@ -1618,49 +1618,23 @@
         }, { passive: true })
 
         seedTickerFromMapData()
-        subscribeToRecentUpdates()
-        startRecentUpdatesPolling()   // 10s safety sync on top of realtime
+        startRecentUpdatesPolling()   // Only server-filtered totals, not raw realtime events
         startTickerScroll()
     }
 
-    // Seed from already-loaded mapData so feed is populated immediately.
-    // Also primes tickerSeenKeys so duplicates from the first poll are dropped.
-    function seedTickerFromMapData() {
-        const sorted = [...mapData.conversations]
-            .filter(ev => ev.created_at)
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .slice(0, TICKER_MAX)
-
-        tickerItems = sorted.map(ev => ({
-            ts:    ev.created_at,
-            city:  ev.city       || '',
-            type:  ev.event_type || 'update',
-            count: ev.count      || 1
+    // Initial feed uses server-side privacy-safe recent events, not daily map totals.
+    async function seedTickerFromMapData() {
+        const since = new Date(Date.now() - 30 * 86400000).toISOString()
+        const { data, error } = await window.supabase.rpc('map_recent', { since, max_rows: TICKER_MAX })
+        if (error) { console.warn('ticker seed error:', error.message); return }
+        tickerItems = (data || []).map(ev => ({
+            ts: ev.created_at,
+            city: ev.place_label || ev.city || '',
+            type: ev.event_type || 'update',
+            count: ev.count || 1
         }))
         tickerSeenKeys = new Set(tickerItems.map(tickerKey))
         renderTickerFeed()
-    }
-
-    function subscribeToRecentUpdates() {
-        if (!window.supabase || tickerSubscription) return
-
-        tickerSubscription = window.supabase
-            .channel('vp-ticker-v1')
-            .on('postgres_changes', {
-                event: 'INSERT', schema: 'public', table: 'conversation_events'
-            }, payload => {
-                appendRecentUpdate(payload.new)
-            })
-            .on('postgres_changes', {
-                event: 'INSERT', schema: 'public', table: 'church_assessments'
-            }, payload => {
-                if (payload.new && payload.new.is_church) {
-                    appendRecentUpdate(payload.new, 'church')
-                }
-            })
-            .subscribe(status => {
-                console.log('ticker subscription status:', status)
-            })
     }
 
     // Stable composite key used for deduplication across seed, realtime, and poll paths.
@@ -1688,17 +1662,12 @@
     async function fetchRecentUpdatesSince(since) {
         if (!window.supabase) return
         try {
-            const { data, error } = await window.supabase
-                .from('conversation_events')
-                .select('created_at, city, event_type, count')
-                .gt('created_at', since)
-                .order('created_at', { ascending: false })
-                .limit(20)
+            const { data, error } = await window.supabase.rpc('map_recent', { since, max_rows: 20 })
             if (error) { console.warn('ticker poll error:', error.message); return }
             if (!data || data.length === 0) return
             mergeRecentUpdates(data.map(ev => ({
                 ts:    ev.created_at,
-                city:  ev.city       || '',
+                city:  ev.place_label || ev.city || '',
                 type:  ev.event_type || 'update',
                 count: ev.count      || 1
             })))
@@ -1857,9 +1826,7 @@
     window.addEventListener('beforeunload', () => {
         stopTickerScroll()
         clearInterval(tickerPollTimer)
-        if (tickerSubscription && window.supabase) {
-            window.supabase.removeChannel(tickerSubscription)
-        }
+        // No row-level realtime subscriptions: map_recent provides safe updates.
     })
 
     // Wait for Supabase auth + leader role before loading data.
